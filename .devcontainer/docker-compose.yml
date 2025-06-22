@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  workspace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VARIANT: 8.3-bullseye
+        NODE_VERSION: "20.11.0"
+    volumes:
+      - ../..:/workspace:cached
+    command: sleep infinity
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=laravel
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - laravel
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:8.0.42
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - laravel
+    command: --default-authentication-plugin=mysql_native_password
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - laravel
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  laravel:
+    driver: bridge
