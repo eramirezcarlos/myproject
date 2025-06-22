@@ -23,7 +23,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         curl \
         vim \
         nano \
-        mysql-client \
+        default-mysql-client \
         redis-tools
 
 # Configure and install PHP extensions
