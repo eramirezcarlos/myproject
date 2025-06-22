@@ -79,8 +79,8 @@ else
 fi
 
 # Check Laravel version (if backend exists)
-if [ -d "/workspace/backend" ] && [ -f "/workspace/backend/artisan" ]; then
-    cd /workspace/backend
+if [ -d "/workspace/myproject/myproject/backend" ] && [ -f "/workspace/myproject/myproject/backend/artisan" ]; then
+    cd /workspace/myproject/myproject/backend
     LARAVEL_VERSION=$(php artisan --version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')
     echo -e "   Laravel: ${LARAVEL_VERSION}"
     if [[ $LARAVEL_VERSION == $EXPECTED_LARAVEL* ]]; then
@@ -96,8 +96,8 @@ else
 fi
 
 # Check Next.js version (if frontend exists)
-if [ -d "/workspace/frontend" ] && [ -f "/workspace/frontend/package.json" ]; then
-    cd /workspace/frontend
+if [ -d "/workspace/myproject/myproject/frontend" ] && [ -f "/workspace/myproject/myproject/frontend/package.json" ]; then
+    cd /workspace/myproject/myproject/frontend
     NEXTJS_VERSION=$(node -p "require('./package.json').dependencies.next || 'not found'" 2>/dev/null | sed 's/[\^~]//')
     echo -e "   Next.js: ${NEXTJS_VERSION}"
     if [[ $NEXTJS_VERSION == $EXPECTED_NEXTJS* ]]; then

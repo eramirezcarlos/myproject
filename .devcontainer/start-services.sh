@@ -14,13 +14,13 @@ echo -e "${BLUE}📋 Quick version check:${NC}"
 echo -e "PHP: $(php -r 'echo PHP_VERSION;')"
 echo -e "Node.js: $(node --version)"
 echo -e "npm: $(npm --version)"
-if [ -d "/workspace/backend" ] && [ -f "/workspace/backend/artisan" ]; then
-    cd /workspace/backend
+if [ -d "/workspace/myproject/myproject/backend" ] && [ -f "/workspace/myproject/myproject/backend/artisan" ]; then
+    cd /workspace/myproject/myproject/backend
     echo -e "Laravel: $(php artisan --version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')"
     cd /workspace
 fi
-if [ -d "/workspace/frontend" ] && [ -f "/workspace/frontend/package.json" ]; then
-    cd /workspace/frontend
+if [ -d "/workspace/myproject/myproject/frontend" ] && [ -f "/workspace/myproject/myproject/frontend/package.json" ]; then
+    cd /workspace/myproject/myproject/frontend
     NEXTJS_VER=$(node -p "require('./package.json').dependencies.next || 'not found'" 2>/dev/null)
     echo -e "Next.js: ${NEXTJS_VER}"
     cd /workspace
@@ -39,8 +39,8 @@ check_port() {
 
 # Function to start Laravel server
 start_laravel() {
-    if [ -d "/workspace/backend" ]; then
-        cd /workspace/backend
+    if [ -d "/workspace/myproject/myproject/backend" ]; then
+        cd /workspace/myproject/myproject/backend
         if ! check_port 8000; then
             echo -e "${BLUE}🚀 Starting Laravel development server on port 8000...${NC}"
             nohup php artisan serve --host=0.0.0.0 --port=8000 > /tmp/laravel.log 2>&1 &
@@ -63,8 +63,8 @@ start_laravel() {
 
 # Function to start Next.js server
 start_nextjs() {
-    if [ -d "/workspace/frontend" ]; then
-        cd /workspace/frontend
+    if [ -d "/workspace/myproject/myproject/frontend" ]; then
+        cd /workspace/myproject/myproject/frontend
         if ! check_port 3000; then
             echo -e "${BLUE}🚀 Starting Next.js development server on port 3000...${NC}"
             nohup npm run dev > /tmp/nextjs.log 2>&1 &
@@ -102,14 +102,14 @@ echo "   PHP: $(php -r 'echo PHP_VERSION;')"
 echo "   Node.js: $(node --version)"
 echo "   npm: $(npm --version)"
 
-if [ -d "/workspace/backend" ] && [ -f "/workspace/backend/artisan" ]; then
-    cd /workspace/backend
+if [ -d "/workspace/myproject/myproject/backend" ] && [ -f "/workspace/myproject/myproject/backend/artisan" ]; then
+    cd /workspace/myproject/myproject/backend
     echo "   Laravel: $(php artisan --version | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+')"
     cd /workspace
 fi
 
-if [ -d "/workspace/frontend" ] && [ -f "/workspace/frontend/package.json" ]; then
-    cd /workspace/frontend
+if [ -d "/workspace/myproject/myproject/frontend" ] && [ -f "/workspace/myproject/myproject/frontend/package.json" ]; then
+    cd /workspace/myproject/myproject/frontend
     NEXTJS_VER=$(node -p "require('./package.json').dependencies.next || 'not found'" 2>/dev/null)
     echo "   Next.js: ${NEXTJS_VER}"
     cd /workspace

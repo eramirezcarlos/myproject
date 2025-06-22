@@ -154,22 +154,22 @@ alias build='npm run build'
 alias start='npm start'
 
 # Navigation aliases
-alias be='cd /workspace/backend'
-alias fe='cd /workspace/frontend'
+alias be='cd /workspace/myproject/myproject/backend'
+alias fe='cd /workspace/myproject/myproject/frontend'
 alias ll='ls -la'
 
 # Development shortcuts
-alias start-laravel='cd /workspace/backend && php artisan serve --host=0.0.0.0 --port=8000'
-alias start-nextjs='cd /workspace/frontend && npm run dev'
+alias start-laravel='cd /workspace/myproject/myproject/backend && php artisan serve --host=0.0.0.0 --port=8000'
+alias start-nextjs='cd /workspace/myproject/myproject/frontend && npm run dev'
 
 EOFBASH
 
 # Make the start script executable
-chmod +x /workspace/.devcontainer/start-services.sh
-chmod +x /workspace/.devcontainer/verify-versions.sh
+chmod +x /workspace/myproject/.devcontainer/start-services.sh
+chmod +x /workspace/myproject/.devcontainer/verify-versions.sh
 
 # Add version verification command to PATH
-sudo ln -sf /workspace/.devcontainer/verify-versions.sh /usr/local/bin/verify-versions
+sudo ln -sf /workspace/myproject/.devcontainer/verify-versions.sh /usr/local/bin/verify-versions
 
 echo -e "${GREEN}🎉 Setup completed! Your development environment is ready.${NC}"
 echo -e "${BLUE}💡 Quick commands:${NC}"
