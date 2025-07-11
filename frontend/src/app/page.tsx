@@ -6,6 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Home() {
   const { user, loading } = useAuth();
 
+  // Redirect authenticated users to dashboard
+  if (user && !loading) {
+    window.location.href = '/dashboard';
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />

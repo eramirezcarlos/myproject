@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   
   const { login, user } = useAuth();
@@ -30,12 +30,14 @@ export default function Login() {
     try {
       await login(email, password);
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      if (error.errors) {
-        setErrors(error.errors);
+      if (error && typeof error === 'object' && 'errors' in error) {
+        setErrors(error.errors as Record<string, string>);
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        setErrors({ general: error.message as string });
       } else {
-        setErrors({ general: error.message || 'Login failed. Please try again.' });
+        setErrors({ general: 'Login failed. Please try again.' });
       }
     } finally {
       setLoading(false);
@@ -121,7 +123,7 @@ export default function Login() {
                   <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-sm font-medium leading-6">
-                  <span className="bg-white px-6 text-gray-900">Don't have an account?</span>
+                  <span className="bg-white px-6 text-gray-900">Don&apos;t have an account?</span>
                 </div>
               </div>
 

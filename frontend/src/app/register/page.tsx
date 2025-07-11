@@ -11,7 +11,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   
   const { register, user } = useAuth();
@@ -32,12 +32,14 @@ export default function Register() {
     try {
       await register(name, email, password, passwordConfirmation);
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      if (error.errors) {
-        setErrors(error.errors);
+      if (error && typeof error === 'object' && 'errors' in error) {
+        setErrors(error.errors as Record<string, string>);
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        setErrors({ general: error.message as string });
       } else {
-        setErrors({ general: error.message || 'Registration failed. Please try again.' });
+        setErrors({ general: 'Registration failed. Please try again.' });
       }
     } finally {
       setLoading(false);

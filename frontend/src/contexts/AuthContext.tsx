@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Try to get authenticated user
       const response = await authApi.getUser();
       setUser(response.data);
-    } catch (error) {
+    } catch {
       console.log('Not authenticated');
       setUser(null);
     } finally {
@@ -64,8 +64,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Get user data
       const response = await authApi.getUser();
       setUser(response.data);
-    } catch (error: any) {
-      throw error.response?.data || error;
+    } catch (error: unknown) {
+      const errorObj = error as { response?: { data?: unknown } };
+      throw errorObj.response?.data || error;
     }
   };
 
@@ -80,8 +81,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Get user data
       const response = await authApi.getUser();
       setUser(response.data);
-    } catch (error: any) {
-      throw error.response?.data || error;
+    } catch (error: unknown) {
+      const errorObj = error as { response?: { data?: unknown } };
+      throw errorObj.response?.data || error;
     }
   };
 
