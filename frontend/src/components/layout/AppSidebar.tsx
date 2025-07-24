@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Profile', href: '/dashboard/profile', icon: UserIcon },
+  { name: 'Profile', href: '/profile', icon: UserIcon },
+  { name: 'UI Elements', href: '/ui-elements', icon: GridIcon }
 ];
 
 function HomeIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -22,6 +23,14 @@ function UserIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  );
+}
+
+function GridIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 0C2.25 4.504 2.871 3.875 4 3.875h4.5c1.129 0 2.25.621 2.25 1.75v4.5c0 1.129-.621 2.25-1.75 2.25h-4.5A1.875 1.875 0 014 10.625V5.625zM14.25 5.625c0-1.129.621-2.25 1.75-2.25H20.5c1.129 0 2.25.621 2.25 1.75v4.5c0 1.129-.621 2.25-1.75 2.25h-4.5a1.875 1.875 0 01-1.875-1.875V5.625zM10.125 14.25c0-1.129.621-2.25 1.75-2.25H16.5c1.129 0 2.25.621 2.25 1.75v4.5c0 1.129-.621 2.25-1.75 2.25h-4.625a1.875 1.875 0 01-1.875-1.875v-4.5zM4.125 14.25c0-1.129.621-2.25 1.75-2.25h4.5c1.129 0 2.25.621 2.25 1.75v4.5c0 1.129-.621 2.25-1.75 2.25h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
     </svg>
   );
 }
