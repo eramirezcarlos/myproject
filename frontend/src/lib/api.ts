@@ -39,6 +39,26 @@ export const authApi = {
   // Get authenticated user
   getUser: () => api.get("/api/user"),
 
+  // Update user profile
+  updateProfile: (userData: { 
+    name?: string; 
+    email?: string; 
+    phone?: string;
+    bio?: string;
+    location?: string;
+  }) => api.put("/api/user/profile", userData),
+
+  // Upload avatar
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return api.post("/api/user/avatar", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   // Password reset
   forgotPassword: (email: string) => api.post("/forgot-password", { email }),
 

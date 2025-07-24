@@ -37,11 +37,19 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <div className="h-11 w-11 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-medium text-lg">
-              {user.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
+          {user.avatar ? (
+            <img 
+              src={user.avatar} 
+              alt={user.name}
+              className="h-11 w-11 object-cover rounded-full"
+            />
+          ) : (
+            <div className="h-11 w-11 bg-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-medium text-lg">
+                {user.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">{user.name}</span>

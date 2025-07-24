@@ -8,6 +8,10 @@ interface User {
   name: string;
   email: string;
   email_verified_at?: string;
+  phone?: string;
+  bio?: string;
+  location?: string;
+  avatar?: string;
 }
 
 interface AuthContextType {
@@ -17,6 +21,14 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, passwordConfirmation: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  updateProfile: (userData: { 
+    name?: string; 
+    email?: string; 
+    phone?: string;
+    bio?: string;
+    location?: string;
+  }) => Promise<void>;
+  uploadAvatar: (file: File) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -97,6 +109,44 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const updateProfile = async (userData: { 
+    name?: string; 
+    email?: string; 
+    phone?: string;
+    bio?: string;
+    location?: string;
+  }) => {
+    try {
+      const response = await authApi.updateProfile(userData);
+      
+      // Update local user state with new data
+      if (user) {
+        setUser({ ...user, ...userData });
+      }
+      
+      return response.data;
+    } catch (error: unknown) {
+      const errorObj = error as { response?: { data?: unknown } };
+      throw errorObj.response?.data || error;
+    }
+  };
+
+  const uploadAvatar = async (file: File) => {
+    try {
+      const response = await authApi.uploadAvatar(file);
+      
+      // Update local user state with new avatar URL
+      if (user && response.data?.avatar) {
+        setUser({ ...user, avatar: response.data.avatar });
+      }
+      
+      return response.data;
+    } catch (error: unknown) {
+      const errorObj = error as { response?: { data?: unknown } };
+      throw errorObj.response?.data || error;
+    }
+  };
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -108,6 +158,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     register,
     logout,
     checkAuth,
+    updateProfile,
+    uploadAvatar,
   };
 
   return (

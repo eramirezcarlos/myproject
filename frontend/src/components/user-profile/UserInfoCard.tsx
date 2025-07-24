@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
@@ -7,22 +7,79 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  bio: string;
+}
+
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
-  const { user } = useAuth();
-  
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
-  };
+  const { user, updateProfile } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!user) return null;
-
-  // Split user name for display
-  const nameParts = user.name.split(' ');
+  // Split user name for display - use empty string as fallback
+  const nameParts = user?.name.split(' ') || [''];
   const firstName = nameParts[0] || '';
   const lastName = nameParts.slice(1).join(' ') || '';
+
+  const [formData, setFormData] = useState<FormData>({
+    firstName: firstName,
+    lastName: lastName,
+    email: user?.email || '',
+    phone: user?.phone || '',
+    bio: user?.bio || '',
+  });
+
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      const nameParts = user.name.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      setFormData({
+        firstName,
+        lastName,
+        email: user.email,
+        phone: user.phone || '',
+        bio: user.bio || '',
+      });
+    }
+  }, [user]);
+  
+  if (!user) return null;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
+      
+      await updateProfile({
+        name: fullName,
+        email: formData.email,
+        phone: formData.phone,
+        bio: formData.bio,
+      });
+
+      closeModal();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-5 border border-gray-200 rounded-2xl bg-white dark:border-gray-800 dark:bg-gray-800/50 lg:p-6">
@@ -65,7 +122,7 @@ export default function UserInfoCard() {
                 Phone
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                -
+                {user.phone || '-'}
               </p>
             </div>
 
@@ -74,7 +131,7 @@ export default function UserInfoCard() {
                 Bio
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Administrator
+                {user.bio || 'Administrator'}
               </p>
             </div>
           </div>
@@ -113,47 +170,14 @@ export default function UserInfoCard() {
               Update your details to keep your profile up-to-date.
             </p>
           </div>
-          <form className="flex flex-col">
-            <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-              <div>
-                <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
-                  Social Links
-                </h5>
-
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                  <div>
-                    <Label>Facebook</Label>
-                    <Input
-                      type="text"
-                      defaultValue=""
-                      placeholder="Facebook profile URL"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>X.com</Label>
-                    <Input type="text" defaultValue="" placeholder="X.com profile URL" />
-                  </div>
-
-                  <div>
-                    <Label>Linkedin</Label>
-                    <Input
-                      type="text"
-                      defaultValue=""
-                      placeholder="LinkedIn profile URL"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Instagram</Label>
-                    <Input
-                      type="text"
-                      defaultValue=""
-                      placeholder="Instagram profile URL"
-                    />
-                  </div>
-                </div>
+          <form onSubmit={handleSave} className="flex flex-col">
+            {error && (
+              <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+                {error}
               </div>
+            )}
+            
+            <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
               <div className="mt-7">
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
                   Personal Information
@@ -161,38 +185,75 @@ export default function UserInfoCard() {
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>First Name</Label>
-                    <Input type="text" defaultValue={firstName} />
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input 
+                      id="firstName"
+                      name="firstName"
+                      type="text" 
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="First name"
+                      required
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Last Name</Label>
-                    <Input type="text" defaultValue={lastName} />
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input 
+                      id="lastName"
+                      name="lastName"
+                      type="text" 
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      placeholder="Last name"
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="email" defaultValue={user.email} />
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input 
+                      id="email"
+                      name="email"
+                      type="email" 
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="Email address"
+                      required
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="tel" defaultValue="" placeholder="Phone number" />
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input 
+                      id="phone"
+                      name="phone"
+                      type="tel" 
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Phone number"
+                    />
                   </div>
 
                   <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" defaultValue="Administrator" placeholder="Brief description about yourself" />
+                    <Label htmlFor="bio">Bio</Label>
+                    <Input 
+                      id="bio"
+                      name="bio"
+                      type="text" 
+                      value={formData.bio}
+                      onChange={handleInputChange}
+                      placeholder="Brief description about yourself"
+                    />
                   </div>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
+              <Button size="sm" variant="outline" type="button" onClick={closeModal} disabled={loading}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
+              <Button size="sm" type="submit" disabled={loading}>
+                {loading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>

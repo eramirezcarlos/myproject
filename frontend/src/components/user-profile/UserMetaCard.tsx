@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useModal } from "@/hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
@@ -7,14 +7,90 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface MetaFormData {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  bio: string;
+}
+
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
-  const { user } = useAuth();
+  const { user, updateProfile, uploadAvatar } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+
+  const [formData, setFormData] = useState<MetaFormData>({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    location: user?.location || '',
+    bio: user?.bio || '',
+  });
+
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name,
+        email: user.email,
+        phone: user.phone || '',
+        location: user.location || '',
+        bio: user.bio || '',
+      });
+    }
+  }, [user]);
   
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
+  if (!user) return null;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      await updateProfile(formData);
+      closeModal();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('File size must be less than 2MB');
+      return;
+    }
+
+    setAvatarLoading(true);
+    setError(null);
+
+    try {
+      await uploadAvatar(file);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to upload avatar');
+    } finally {
+      setAvatarLoading(false);
+    }
   };
 
   if (!user) return null;
@@ -24,12 +100,42 @@ export default function UserMetaCard() {
       <div className="p-5 border border-gray-200 rounded-2xl bg-white dark:border-gray-800 dark:bg-gray-800/50 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-            <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-700">
-              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">
-                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                </span>
+            <div className="relative group">
+              <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-700">
+                {user.avatar ? (
+                  <img 
+                    src={user.avatar} 
+                    alt={user.name}
+                    className="w-20 h-20 object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-2xl">
+                      {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
+              <label className="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                  disabled={avatarLoading}
+                />
+                {avatarLoading ? (
+                  <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                )}
+              </label>
             </div>
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
@@ -37,7 +143,7 @@ export default function UserMetaCard() {
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Administrator
+                  {user.bio || 'Administrator'}
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -158,7 +264,12 @@ export default function UserMetaCard() {
               Update your details to keep your profile up-to-date.
             </p>
           </div>
-          <form className="flex flex-col">
+          <form onSubmit={handleSave} className="flex flex-col">
+            {error && (
+              <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+                {error}
+              </div>
+            )}
             <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
               <div>
                 <h5 className="mb-5 text-lg font-medium text-gray-800 dark:text-white/90 lg:mb-6">
@@ -206,38 +317,75 @@ export default function UserMetaCard() {
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Full Name</Label>
-                    <Input type="text" defaultValue={user.name} />
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input 
+                      id="name"
+                      name="name"
+                      type="text" 
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Full name"
+                      required
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Email Address</Label>
-                    <Input type="email" defaultValue={user.email} />
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input 
+                      id="email"
+                      name="email"
+                      type="email" 
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="Email address"
+                      required
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Phone</Label>
-                    <Input type="tel" defaultValue="" placeholder="Phone number" />
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input 
+                      id="phone"
+                      name="phone"
+                      type="tel" 
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Phone number"
+                    />
                   </div>
 
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Location</Label>
-                    <Input type="text" defaultValue="" placeholder="City, Country" />
+                    <Label htmlFor="location">Location</Label>
+                    <Input 
+                      id="location"
+                      name="location"
+                      type="text" 
+                      value={formData.location}
+                      onChange={handleInputChange}
+                      placeholder="City, Country"
+                    />
                   </div>
 
                   <div className="col-span-2">
-                    <Label>Bio</Label>
-                    <Input type="text" defaultValue="Administrator" placeholder="Brief description about yourself" />
+                    <Label htmlFor="bio">Bio</Label>
+                    <Input 
+                      id="bio"
+                      name="bio"
+                      type="text" 
+                      value={formData.bio}
+                      onChange={handleInputChange}
+                      placeholder="Brief description about yourself"
+                    />
                   </div>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
+              <Button size="sm" variant="outline" type="button" onClick={closeModal} disabled={loading}>
                 Close
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
+              <Button size="sm" type="submit" disabled={loading}>
+                {loading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>
